@@ -110,7 +110,8 @@ async fn main() -> std::io::Result<()> {
             .app_data(app_state.clone())  // Share the app state across requests
             .route("/create_tx", web::post().to(create_tx))  // Define the endpoint
     })
-    .bind("127.0.0.1:8080")?  // Bind to localhost:8080
+    // .bind("127.0.0.1:8080")?  // Bind to localhost:8080
+    .bind("0.0.0.0:8080")? // This ensures the server is accessible from outside the container.
     .run()
     .await  // Run the server
 }

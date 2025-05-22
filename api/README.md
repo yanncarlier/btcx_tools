@@ -44,6 +44,13 @@ To run the API locally, follow these steps:
 
 The server will start and listen on http://127.0.0.1:8080.
 
+## using docker
+
+   ```bash
+ docker build -t bitcoin_tx_api .
+ docker run -p 8080:8080 bitcoin_tx_api
+   ```
+
 ## API Endpoint
 
 **POST /create_tx**
