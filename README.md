@@ -4,24 +4,92 @@ A comprehensive collection of Bitcoin utilities written in Rust, including an AP
 
 ## Project Structure
 
-### `/api`
-A REST API server for Bitcoin transaction and blockchain data operations.
+### `/api` - Bitcoin Transaction API
+
+A REST API server for creating unsigned Bitcoin transactions. The API allows you to construct Bitcoin transactions by specifying inputs and outputs in JSON format.
 
 **Features:**
-- Bitcoin transaction analysis
-- Blockchain data queries
-- RESTful endpoints for Bitcoin operations
+- Create unsigned Bitcoin transactions
+- Validate transaction inputs and outputs
+- Support for Bitcoin mainnet (configurable)
+- Hex-encoded transaction output
 
-**Running:**
+**Running the API:**
+
+**Method 1: Using Cargo (Development)**
 ```bash
 cd api
 cargo build --release
 ./target/release/bitcoin_tx_api
 ```
 
+**Method 2: Using Cargo run (Development with auto-rebuild)**
+```bash
+cd api
+cargo run
+```
+
+**Method 3: Using Docker**
+```bash
+cd api
+docker build -t bitcoin_tx_api .
+docker run -p 8080:8080 bitcoin_tx_api
+```
+
+**Method 4: Using pre-built binary**
+```bash
+cd api
+# Download the binary from releases (if available)
+./bitcoin_tx_api
+```
+
+**API Usage:**
+
+The API exposes a single endpoint:
+
+**POST /create_tx** - Create an unsigned Bitcoin transaction
+
+**Request Body:**
+```json
+{
+    "inputs": [
+        {
+            "txid": "abc1234567890abcdef1234567890abcdef1234567890abcdef1234567890abc",
+            "vout": 0
+        }
+    ],
+    "outputs": [
+        {
+            "address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+            "amount": 10000
+        }
+    ]
+}
+```
+
+**Response:**
+```json
+{
+    "tx_hex": "01000000..."
+}
+```
+
+**Testing with curl:**
+```bash
+curl -X POST http://localhost:8080/create_tx \
+     -H "Content-Type: application/json" \
+     -d '{"inputs":[{"txid":"abc1234567890abcdef1234567890abcdef1234567890abcdef1234567890abc","vout":0}],"outputs":[{"address":"1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa","amount":10000}]}'
+```
+
 **Deployment:**
 - Docker support via `Dockerfile`
-- Deploy to Fly.io using `fly.toml`
+- Deploy to Fly.io using `fly.toml` configuration
+- The server binds to `0.0.0.0:8080` by default
+
+**Notes:**
+- The API returns unsigned transactions that must be signed separately before broadcasting
+- Currently configured for Bitcoin mainnet (can be modified in source code)
+- Input validation includes checking txid format and address network compatibility
 
 ### `/scripts`
 
