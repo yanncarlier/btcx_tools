@@ -23,7 +23,7 @@ fn main() {
     // Display inputs for verification
     println!("Mnemonic Phrase: {}", mnemonic_phrase);
     println!("Derivation Path: {}", derivation_path_str);
-    println!("Passphrase: {}", if passphrase.is_empty() { "<empty>" } else { passphrase });
+    println!("Passphrase: {}", if passphrase.is_empty() { "<empty>" } else { "<redacted>" });
 
     // Parse mnemonic
     let mnemonic = match Mnemonic::parse_in(Language::English, mnemonic_phrase) {
