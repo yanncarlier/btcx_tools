@@ -1,2 +1,14 @@
 /target
 *.txt
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+*.log
+*~
+*.swp
+*.swo
+
+# IDE/Editor directories
+.vscode/
+.idea/
