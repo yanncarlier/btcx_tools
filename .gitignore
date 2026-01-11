@@ -55,3 +55,32 @@ scripts/*.local.*
 
 # Optional: ignore build scripts outputs
 build.rs.generated
+
+# === Rust standard ===
+target/
+**/.target/
+**/target/
+
+# === Tooling caches ===
+.rustfmt_cache
+.clippy-cache/
+cargo-*
+
+# === Common editor / OS noise ===
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# === Coverage / profiling ===
+*.profraw
+*.profdata
+lcov.info
+coverage/
+target/llvm-cov/
+
+# === wasm-pack (if you do WASM) ===
+pkg/
+wasm-pack.log
