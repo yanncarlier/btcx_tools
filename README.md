@@ -303,7 +303,14 @@ Address: 17PTKw8b4pvajpt3UhviwPJE4REr9XUm7X, Balance: 0 satoshis
 bash
 
 ```
-./generate_mnemonic/target/release/generate_mnemonic ./generate_mnemonic/english.txt 12 | tee mnemonic.txt | xargs -I {} generate_addresses/target/release/generate_addresses "{}" "m/44'/0'/0'/0" "" | grep address | cut -d ':' -f 2 > addresses.txt && blockstream_info/target/release/blockstream_balance_loop addresses.txt
+# Generate mnemonic -> save it -> generate addresses -> save addresses -> check balances
+./generate_mnemonic/target/release/generate_mnemonic ./generate_mnemonic/english.txt 12 \
+  | tee mnemonic.txt \
+  | xargs -I {} ./generate_addresses/target/release/generate_addresses "{}" "m/44'/0'/0'/0" "" \
+  | grep address \
+  | cut -d ':' -f 2 \
+  > addresses.txt \
+  && ./blockstream_info/target/release/blockstream_balance_loop addresses.txt
 ```
 
 
@@ -314,9 +321,17 @@ bash
 
 ```
 while true; do
-    if ./generate_mnemonic/target/release/generate_mnemonic ./generate_mnemonic/english.txt 12 | tee mnemonic.txt | xargs -I {} generate_addresses/target/release/generate_addresses "{}" "m/44'/0'/0'/0" "" | grep address | cut -d ':' -f 2 > addresses.txt && blockstream_info/target/release/blockstream_balance_loop addresses.txt | tee /dev/tty | grep -q -v "Balance: 0 satoshis"; then
-        break
-    fi
+    # Generate mnemonic -> addresses -> check balances in one pipeline
+    ./generate_mnemonic/target/release/generate_mnemonic ./generate_mnemonic/english.txt 12 \
+        | tee mnemonic.txt \
+        | xargs -I {} ./generate_addresses/target/release/generate_addresses "{}" "m/44'/0'/0'/0" "" \
+        | grep address \
+        | cut -d ':' -f 2 \
+        > addresses.txt \
+        && ./blockstream_info/target/release/blockstream_balance_loop addresses.txt \
+        | tee /dev/tty \
+        | grep -q -v "Balance: 0 satoshis" \
+        && break
 done
 ```
 
@@ -327,7 +342,13 @@ done
 bash
 
 ```
-while IFS= read -r line || [ -n "$line" ]; do ./brain_wallet/target/release/brain_wallet "$line"; done < quotes.txt | grep Address| cut -d ':' -f 2 > addresses.txt && ./blockstream_info/target/release/blockstream_balance_loop addresses.txt
+# Generate addresses from quotes -> extract addresses -> check balances
+cat quotes.txt \
+    | while read -r quote; do ./brain_wallet/target/release/brain_wallet "$quote"; done \
+    | grep Address \
+    | cut -d ':' -f 2 \
+    > addresses.txt \
+    && ./blockstream_info/target/release/blockstream_balance_loop addresses.txtwhile IFS= read -r line || [ -n "$line" ]; do ./brain_wallet/target/release/brain_wallet "$line"; done < quotes.txt | grep Address| cut -d ':' -f 2 > addresses.txt && ./blockstream_info/target/release/blockstream_balance_loop addresses.txt
 ```
 
 
