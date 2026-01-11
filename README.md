@@ -1,5 +1,7 @@
 # Bitcoin Tools (btcx_tools)
 
+**Use at Your Own Risk This is experimental/beta software. It may contain bugs or cause unexpected behavior. No warranties are provided. Use entirely at your own discretion and risk.**
+
 A comprehensive collection of Bitcoin utilities written in Rust, including an API server and various command-line tools for Bitcoin address generation, mnemonics, wallet operations, and blockchain queries.
 
 ## Prerequisites
