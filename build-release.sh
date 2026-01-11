@@ -32,14 +32,14 @@ strip "$DIST"/* 2>/dev/null || true
 echo "UPX compression (optional)..."
 upx --best "$DIST"/* 2>/dev/null || true
 
-echo "Creating versioned copies..."
-VERSION=$(cd api && cargo pkgid | awk -F '[#@]' '{print $3}' || echo "dev")
+# echo "Creating versioned copies..."
+# VERSION=$(cd api && cargo pkgid | awk -F '[#@]' '{print $3}' || echo "dev")
 
-for f in "$DIST"/*; do
-    [[ -f $f && ! $f =~ -v ]] || continue
-    name=$(basename "$f")
-    cp -v "$f" "$DIST/${name}-v${VERSION}-linux-x64"
-done
+# for f in "$DIST"/*; do
+#     [[ -f $f && ! $f =~ -v ]] || continue
+#     name=$(basename "$f")
+#     cp -v "$f" "$DIST/${name}-v${VERSION}-linux-x64"
+# done
 
 echo -e "\nBuild completed:"
 ls -lh "$DIST"/
