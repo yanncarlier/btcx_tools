@@ -19,9 +19,12 @@ build_and_copy() {
 }
 
 build_and_copy "blockstream_balance_loop"  "scripts/blockstream_info"
+build_and_copy "blockstream_tx"            "scripts/blockstream_tx"
 build_and_copy "brain_wallet"              "scripts/brain_wallet"
 build_and_copy "generate_addresses"        "scripts/generate_addresses"
 build_and_copy "generate_mnemonic"         "scripts/generate_mnemonic"
+build_and_copy "create_tx"                 "scripts/create_tx"
+build_and_copy "sign_tx"                   "scripts/sign_tx"
 build_and_copy "bitcoin_tx_api"            "api"                "bitcoin_tx_api"
 
 echo -e "\n→ Post-processing"
