@@ -1,0 +1,28 @@
+[package]
+name = "btcx_lib"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+description = "Bitcoin Tools Library"
+authors = ["Your Name <your.email@example.com>"]
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+bitcoin = { version = "0.30.0", features = ["std", "rand"] }
+bitcoin_hashes = "0.12.0"
+secp256k1 = { version = "0.27.0", features = ["rand-std"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+hex = "0.4.3"
+reqwest = { version = "0.11.0", features = ["json"] }
+thiserror = "1.0"
+log = "0.4"
+anyhow = "1.0"
+
+[dev-dependencies]
+env_logger = "0.10"
+
+[lib]
+name = "btcx_lib"
+path = "lib.rs"
