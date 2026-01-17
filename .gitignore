@@ -84,3 +84,5 @@ target/llvm-cov/
 # === wasm-pack (if you do WASM) ===
 pkg/
 wasm-pack.log
+# Distribution binaries
+dist/

@@ -1,6 +1,7 @@
 //! Error types for the Bitcoin Tools library
 
 use std::fmt;
+use bitcoin::{address, bip32, psbt};
 
 /// Common error type for the library
 #[derive(Debug, thiserror::Error)]
@@ -85,20 +86,20 @@ impl From<&str> for Error {
     }
 }
 
-impl From<bitcoin::util::address::Error> for Error {
-    fn from(e: bitcoin::util::address::Error) -> Self {
+impl From<address::Error> for Error {
+    fn from(e: address::Error) -> Self {
         Error::InvalidAddress(e.to_string())
     }
 }
 
-impl From<bitcoin::util::bip32::Error> for Error {
-    fn from(e: bitcoin::util::bip32::Error) -> Self {
+impl From<bip32::Error> for Error {
+    fn from(e: bip32::Error) -> Self {
         Error::Custom(format!("BIP32 error: {}", e))
     }
 }
 
-impl From<bitcoin::util::psbt::Error> for Error {
-    fn from(e: bitcoin::util::psbt::Error) -> Self {
+impl From<psbt::Error> for Error {
+    fn from(e: psbt::Error) -> Self {
         Error::PsbtError(e.to_string())
     }
 }
@@ -109,8 +110,8 @@ impl From<bitcoin::blockdata::script::Error> for Error {
     }
 }
 
-impl From<bitcoin::util::bip32::ExtendedPrivKey> for Error {
-    fn from(_: bitcoin::util::bip32::ExtendedPrivKey) -> Self {
+impl From<bip32::ExtendedPrivKey> for Error {
+    fn from(_: bip32::ExtendedPrivKey) -> Self {
         Error::Custom("Invalid extended private key".to_string())
     }
 }
@@ -127,15 +128,6 @@ pub trait Context<T, E> {
     fn context<C>(self, context: C) -> Result<T>
     where
         C: fmt::Display + Send + Sync + 'static;
-}
-
-impl<T> Context<T, Error> for std::result::Result<T, Error> {
-    fn context<C>(self, context: C) -> Result<T>
-    where
-        C: fmt::Display + Send + Sync + 'static,
-    {
-        self.map_err(|e| Error::Custom(format!("{}: {}", context, e)))
-    }
 }
 
 impl<T, E> Context<T, E> for std::result::Result<T, E>

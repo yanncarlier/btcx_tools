@@ -46,7 +46,9 @@ CRATES=(
     "scripts/blockstream_info:blockstream_balance_loop"
     "scripts/blockstream_tx:blockstream_tx"
     "scripts/brain_wallet:brain_wallet"
+    "scripts/broadcast_tx:broadcast_tx"
     "scripts/create_tx:create_tx"
+    "scripts/fetch_utxos:fetch_utxos"
     "scripts/generate_addresses:generate_addresses"
     "scripts/generate_mnemonic:generate_mnemonic"
     "scripts/sign_tx:sign_tx"
@@ -58,7 +60,7 @@ for crate_spec in "${CRATES[@]}"; do
     IFS=':' read -r crate_dir bin_name <<< "$crate_spec"
     
     # Determine source path based on target and build type
-    local target_dir=""
+    target_dir=""
     if [[ -n "$TARGET" ]]; then
         target_dir="$TARGET/$([[ "$BUILD_TYPE" == "release" ]] && echo "release" || echo "debug")"
     else

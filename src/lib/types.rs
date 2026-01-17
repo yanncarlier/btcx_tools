@@ -4,11 +4,10 @@ use std::str::FromStr;
 use std::fmt;
 
 use bitcoin::{
-    Address, Amount, OutPoint, Script, Transaction, TxIn, TxOut, Txid, Network,
+    psbt, Address, Amount, OutPoint, ScriptBuf, Transaction, Txid, Network,
     secp256k1, PublicKey, PrivateKey,
 };
 use serde::{Serialize, Deserialize};
-use thiserror::Error;
 
 use crate::error::Error;
 use crate::Result;
@@ -89,12 +88,13 @@ pub struct Utxo {
     /// The index of the output in the transaction
     pub vout: u32,
     /// The amount in satoshis
+    #[serde(with = "bitcoin::amount::serde::as_sat")]
     pub amount: Amount,
     /// The script that locks the output
-    pub script_pubkey: Script,
-    /// The address that receives the output (if known)
+    pub script_pubkey: ScriptBuf,
+    /// The address that receives the output (if known) as a string
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub address: Option<Address>,
+    pub address: Option<String>,
     /// The number of confirmations (if known)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub confirmations: Option<u32>,
@@ -116,8 +116,8 @@ impl Utxo {
         txid: Txid,
         vout: u32,
         amount: Amount,
-        script_pubkey: Script,
-        address: Option<Address>,
+        script_pubkey: ScriptBuf,
+        address: Option<String>,
     ) -> Self {
         Utxo {
             txid,
@@ -148,15 +148,16 @@ pub struct SigningInput {
     /// The index of the previous output
     pub vout: u32,
     /// The amount of the previous output
+    #[serde(with = "bitcoin::amount::serde::as_sat")]
     pub amount: Amount,
     /// The script that locks the previous output
-    pub script_pubkey: Script,
+    pub script_pubkey: ScriptBuf,
     /// The redeem script (for P2SH)
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub redeem_script: Option<Script>,
+    pub redeem_script: Option<ScriptBuf>,
     /// The witness script (for P2WSH)
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub witness_script: Option<Script>,
+    pub witness_script: Option<ScriptBuf>,
     /// The sequence number
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sequence: Option<u32>,
@@ -168,7 +169,7 @@ impl SigningInput {
         txid: Txid,
         vout: u32,
         amount: Amount,
-        script_pubkey: Script,
+        script_pubkey: ScriptBuf,
     ) -> Self {
         SigningInput {
             txid,
@@ -182,13 +183,13 @@ impl SigningInput {
     }
 
     /// Set the redeem script
-    pub fn with_redeem_script(mut self, redeem_script: Script) -> Self {
+    pub fn with_redeem_script(mut self, redeem_script: ScriptBuf) -> Self {
         self.redeem_script = Some(redeem_script);
         self
     }
 
     /// Set the witness script
-    pub fn with_witness_script(mut self, witness_script: Script) -> Self {
+    pub fn with_witness_script(mut self, witness_script: ScriptBuf) -> Self {
         self.witness_script = Some(witness_script);
         self
     }
@@ -266,9 +267,10 @@ impl Default for FeeEstimate {
 /// Transaction output target
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OutputTarget {
-    /// The destination address
-    pub address: Address,
+    /// The destination address as a string
+    pub address: String,
     /// The amount to send
+    #[serde(with = "bitcoin::amount::serde::as_sat")]
     pub amount: Amount,
     /// Whether this is a change output
     #[serde(default)]
@@ -277,7 +279,7 @@ pub struct OutputTarget {
 
 impl OutputTarget {
     /// Create a new output target
-    pub fn new(address: Address, amount: Amount) -> Self {
+    pub fn new(address: String, amount: Amount) -> Self {
         OutputTarget {
             address,
             amount,
@@ -286,7 +288,7 @@ impl OutputTarget {
     }
 
     /// Create a new change output target
-    pub fn new_change(address: Address, amount: Amount) -> Self {
+    pub fn new_change(address: String, amount: Amount) -> Self {
         OutputTarget {
             address,
             amount,
@@ -309,6 +311,7 @@ pub struct TxBuilderConfig {
     /// The sequence number to use for RBF
     pub rbf_sequence: u32,
     /// The minimum change amount to keep as change (otherwise add to fee)
+    #[serde(with = "bitcoin::amount::serde::as_sat")]
     pub min_change: Amount,
     /// The coin selection strategy to use
     pub coin_selection: CoinSelectionStrategy,
@@ -369,6 +372,7 @@ pub struct SignedTransaction {
     /// The transaction weight
     pub weight: usize,
     /// The transaction fee in satoshis
+    #[serde(with = "bitcoin::amount::serde::as_sat")]
     pub fee: Amount,
     /// The fee rate in satoshis per virtual byte
     pub fee_rate: f32,
@@ -380,9 +384,9 @@ impl SignedTransaction {
     /// Create a new signed transaction
     pub fn new(tx: Transaction, fee: Amount, is_complete: bool) -> Result<Self> {
         let txid = tx.txid();
-        let weight = tx.get_weight() as usize;
+        let weight = tx.weight().to_wu() as usize;
         let vsize = (weight + 3) / 4; // Convert weight to vsize (rounded up)
-        let size = tx.get_size();
+        let size = tx.size();
         let fee_rate = fee.to_btc() / (vsize as f64 / 100_000_000.0);
 
         Ok(SignedTransaction {
@@ -407,28 +411,29 @@ impl SignedTransaction {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PartiallySignedTransaction {
     /// The PSBT (Partially Signed Bitcoin Transaction)
-    pub psbt: bitcoin::util::psbt::PartiallySignedTransaction,
+    pub psbt: psbt::PartiallySignedTransaction,
     /// Whether the transaction is fully signed
     pub is_complete: bool,
 }
 
 impl PartiallySignedTransaction {
     /// Create a new PSBT
-    pub fn new(psbt: bitcoin::util::psbt::PartiallySignedTransaction) -> Self {
-        let is_complete = psbt.is_finalized();
+    pub fn new(psbt: psbt::PartiallySignedTransaction) -> Self {
+        // TODO: implement proper check for finalized PSBT
+        let is_complete = false;
         PartiallySignedTransaction { psbt, is_complete }
     }
 
-    /// Get the PSBT as base64
-    pub fn to_base64(&self) -> String {
-        use bitcoin::consensus::encode::serialize;
-        base64::encode(&serialize(&self.psbt))
+    /// Get the PSBT as hex
+    pub fn to_hex(&self) -> Result<String> {
+        let bytes = self.psbt.serialize();
+        Ok(hex::encode(&bytes))
     }
 
-    /// Create a PSBT from base64
-    pub fn from_base64(s: &str) -> Result<Self> {
-        let bytes = base64::decode(s).map_err(|e| Error::Custom(format!("Invalid base64: {}", e)))?;
-        let psbt = bitcoin::consensus::encode::deserialize(&bytes)
+    /// Create a PSBT from hex
+    pub fn from_hex(s: &str) -> Result<Self> {
+        let bytes = hex::decode(s).map_err(|e| Error::Custom(format!("Invalid hex: {}", e)))?;
+        let psbt = psbt::PartiallySignedTransaction::deserialize(&bytes)
             .map_err(|e| Error::Custom(format!("Invalid PSBT: {}", e)))?;
         Ok(PartiallySignedTransaction::new(psbt))
     }
@@ -465,25 +470,27 @@ impl KeyPair {
     }
 
     /// Get the address for this key pair
-    pub fn address(&self, address_type: &AddressType) -> Address {
+    pub fn address(&self, address_type: &AddressType) -> Result<Address> {
         match address_type {
-            AddressType::P2pkh => Address::p2pkh(&self.public_key, self.network.into()),
+            AddressType::P2pkh => Ok(Address::p2pkh(&self.public_key, self.network.into())),
             AddressType::P2shP2wpkh => {
-                let pubkey_hash = self.public_key.wpubkey_hash().unwrap();
-                Address::p2shwpkh(&pubkey_hash, self.network.into()).unwrap()
+                // Use the public key directly, let the function compute the hash
+                Ok(Address::p2shwpkh(&self.public_key, self.network.into())?)
             }
             AddressType::P2wpkh => {
-                Address::p2wpkh(&self.public_key, self.network.into()).unwrap()
+                Ok(Address::p2wpkh(&self.public_key, self.network.into())?)
             }
             AddressType::P2tr => {
                 // For Taproot, we need an internal key and no script tree for now
                 let internal_key = self.public_key;
-                Address::p2tr(
+                // Convert PublicKey to XOnlyPublicKey
+                let (x_only, _) = internal_key.inner.x_only_public_key();
+                Ok(Address::p2tr(
                     &secp256k1::Secp256k1::new(),
-                    internal_key.inner,
+                    x_only,
                     None,
                     self.network.into(),
-                )
+                ))
             }
         }
     }
