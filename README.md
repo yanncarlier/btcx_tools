@@ -95,12 +95,30 @@ scripts/build/build.sh --clean --release
 # Check balances of many addresses
 ./dist/blockstream_balance_loop addresses.txt  
 # or
-./dist/blockstream_balance_loop <<< "1LqBGSKuX5yYUonjxT5qGfpUsXKYYWeabA"
+./dist/blockstream_balance_loop <<< 1LqBGSKuX5yYUonjxT5qGfpUsXKYYWeabA
 # or
-echo "1LqBGSKuX5yYUonjxT5qGfpUsXKYYWeabA" | ./dist/blockstream_balance_loop
+echo 1LqBGSKuX5yYUonjxT5qGfpUsXKYYWeabA | ./dist/blockstream_balance_loop
+
+# To get a transaction ID (txid) (address used to send BTC to Hal Finney)
+./dist/fetch_utxos 12cbQLTFMXRnSzktFkuoG3eHoMeFtpTu3S
+# Example output includes txid field for each UTXO:
+[
+  {
+    "txid": "3832f861eb0fd967fd079da2ee90e415d295dbc81bfb895b73a220aa689c89eb",
+    "vout": 0,
+    "status": {
+      "confirmed": true,
+      "block_height": 878308,
+      "block_hash": "00000000000000000000287f37f0ddfc5756dddd8eecd2c146d36eafc744fc15",
+      "block_time": 1736310913
+    },
+    "value": 1000,
+    "address": null,
+    "script_pubkey": null
+  }, ...
 
 # Look up transaction details by txid
-./dist/blockstream_tx abc123def456...
+./dist/blockstream_tx 3832f861eb0fd967fd079da2ee90e415d295dbc81bfb895b73a220aa689c89eb
 
 # Create unsigned transaction (JSON from command-line)
 ./dist/create_tx '{"inputs":[{"txid":"abc123...","vout":0}],"outputs":[{"address":"1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa","amount":1000}]}'
@@ -110,6 +128,70 @@ echo "1LqBGSKuX5yYUonjxT5qGfpUsXKYYWeabA" | ./dist/blockstream_balance_loop
 
 # Start the transaction builder API
 ./dist/bitcoin_tx_api
+```
+
+
+
+## Advanced Usage Examples
+
+
+
+```
+./dist/generate_mnemonic wordlists/english.txt 12 \
+|xargs -I {} ./dist/generate_addresses {} "m/44'/0'/0'/0" ""
+```
+
+
+
+**Generate mnemonic -> save it -> generate addresses -> save addresses -> check balances**
+
+```bash
+./dist/generate_mnemonic ./wordlists/english.txt 12 \
+  | tee mnemonic.txt \
+  | xargs -I {} ./dist/generate_addresses "{}" "m/44'/0'/0'/0" "" \
+  | grep address \
+  | cut -d ':' -f 2 \
+  > ./addresses.txt \
+  && ./dist/blockstream_balance_loop ./addresses.txt
+```
+
+**Generate mnemonic -> addresses -> check balances in one pipeline**
+
+```bash
+while true; do
+    ./dist/generate_mnemonic ./wordlists/english.txt 12 \
+        | tee ./mnemonic.txt \
+        | xargs -I {} ./dist/generate_addresses "{}" "m/44'/0'/0'/0" "" \
+        | grep address \
+        | cut -d ':' -f 2 \
+        > ./addresses.txt \
+        && ./dist/blockstream_balance_loop ./addresses.txt \
+        | tee /dev/tty \
+        | grep -q -v "Balance: 0 satoshis" \
+        && break
+done
+```
+
+**Generate addresses from quotes -> extract addresses -> check balances**
+
+```bash
+cat ./quotes.txt \
+    | while read -r quote; do ./dist/brain_wallet "$quote"; done \
+    | grep Address \
+    | cut -d ':' -f 2 \
+    > ./addresses.txt \
+    && ./dist/blockstream_balance_loop ./addresses.txt
+```
+
+**Process multiple passphrases from a file**
+
+```bash
+while IFS= read -r line || [ -n "$line" ]; do \
+./dist/brain_wallet "$line"; done \
+< ./quotes.txt \
+| grep Address \
+| cut -d ':' -f 2 > ./addresses.txt \
+&& ./dist/blockstream_balance_loop ./addresses.txt
 ```
 
 ## Tools Overview
@@ -202,59 +284,6 @@ This project contains 11 main components:
 - Dockerfile: Containerizes the API server
 - fly.toml: Fly.io deployment configuration
 - Cargo.toml files: Dependency specifications for each crate
-
-## Advanced Usage Examples
-
-**Generate mnemonic -> save it -> generate addresses -> save addresses -> check balances**
-
-```bash
-./dist/generate_mnemonic ./wordlists/english.txt 12 \
-  | tee mnemonic.txt \
-  | xargs -I {} ./dist/generate_addresses "{}" "m/44'/0'/0'/0" "" \
-  | grep address \
-  | cut -d ':' -f 2 \
-  > ./addresses.txt \
-  && ./dist/blockstream_balance_loop ./addresses.txt
-```
-
-**Generate mnemonic -> addresses -> check balances in one pipeline**
-
-```bash
-while true; do
-    ./dist/generate_mnemonic ./wordlists/english.txt 12 \
-        | tee ./mnemonic.txt \
-        | xargs -I {} ./dist/generate_addresses "{}" "m/44'/0'/0'/0" "" \
-        | grep address \
-        | cut -d ':' -f 2 \
-        > ./addresses.txt \
-        && ./dist/blockstream_balance_loop ./addresses.txt \
-        | tee /dev/tty \
-        | grep -q -v "Balance: 0 satoshis" \
-        && break
-done
-```
-
-**Generate addresses from quotes -> extract addresses -> check balances**
-
-```bash
-cat ./quotes.txt \
-    | while read -r quote; do ./dist/brain_wallet "$quote"; done \
-    | grep Address \
-    | cut -d ':' -f 2 \
-    > ./addresses.txt \
-    && ./dist/blockstream_balance_loop ./addresses.txt
-```
-
-**Process multiple passphrases from a file**
-
-```bash
-while IFS= read -r line || [ -n "$line" ]; do \
-./dist/brain_wallet "$line"; done \
-< ./quotes.txt \
-| grep Address \
-| cut -d ':' -f 2 > ./addresses.txt \
-&& ./dist/blockstream_balance_loop ./addresses.txt
-```
 
 ## Dependencies
 
