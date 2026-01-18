@@ -17,7 +17,7 @@ A comprehensive collection of Bitcoin utilities written in Rust, including an AP
 The project includes a convenient build script that compiles **all** tools in release mode and places the binaries in the `dist/` directory:
 
 ```bash
-./build-release.sh
+scripts/build/build.sh --release
 ```
 
 What it does:
@@ -35,7 +35,10 @@ dist/
 ├── blockstream_balance_loop
 ├── blockstream_tx
 ├── brain_wallet
+├── broadcast_tx
 ├── create_tx
+├── estimate_fee
+├── fetch_utxos
 ├── generate_addresses
 ├── generate_mnemonic
 ├── sign_tx
@@ -47,7 +50,7 @@ dist/
 # API server
 cd api && cargo build --release
 
-# Individual tools
+# Individual tools (in order of appearance in the Tools Overview)
 cd ../scripts/generate_mnemonic     && cargo build --release
 cd ../scripts/generate_addresses    && cargo build --release
 cd ../scripts/brain_wallet          && cargo build --release
@@ -55,9 +58,27 @@ cd ../scripts/create_tx             && cargo build --release
 cd ../scripts/sign_tx               && cargo build --release
 cd ../scripts/blockstream_info      && cargo build --release
 cd ../scripts/blockstream_tx        && cargo build --release
+cd ../scripts/fetch_utxos           && cargo build --release
+cd ../scripts/broadcast_tx          && cargo build --release
+cd ../scripts/estimate_fee          && cargo build --release
 ```
 
-**Recommendation:** Use `./build-release.sh` — it's faster and keeps everything organized in one place.
+**Recommendation:** Use `scripts/build/build.sh --release` — it's faster and keeps everything organized in one place.
+
+The build script supports several options:
+```bash
+# Show help and usage information
+scripts/build/build.sh --help
+
+# Build debug binaries (default)
+scripts/build/build.sh
+
+# Build release binaries (recommended for production)
+scripts/build/build.sh --release
+
+# Clean build directories and rebuild
+scripts/build/build.sh --clean --release
+```
 
 ### Basic Usage
 
@@ -66,13 +87,17 @@ cd ../scripts/blockstream_tx        && cargo build --release
 ./dist/generate_mnemonic wordlists/english.txt 12
 
 # Generate addresses from mnemonic (no passphrase)
-./dist/generate_addresses "abandon abandon ... about" "m/44'/0'/0'/0" ""
+./dist/generate_addresses "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about" "m/44'/0'/0'/0" ""
 
 # Brain wallet from passphrase
 ./dist/brain_wallet "correct horse battery staple"
 
 # Check balances of many addresses
-./dist/blockstream_balance_loop addresses.txt
+./dist/blockstream_balance_loop addresses.txt  
+# or
+./dist/blockstream_balance_loop <<< "1LqBGSKuX5yYUonjxT5qGfpUsXKYYWeabA"
+# or
+echo "1LqBGSKuX5yYUonjxT5qGfpUsXKYYWeabA" | ./dist/blockstream_balance_loop
 
 # Look up transaction details by txid
 ./dist/blockstream_tx abc123def456...
@@ -89,7 +114,7 @@ cd ../scripts/blockstream_tx        && cargo build --release
 
 ## Tools Overview
 
-This project contains 8 main components:
+This project contains 11 main components:
 
 ### 1. Generate Mnemonic (scripts/generate_mnemonic/src/main.rs)
 
@@ -133,9 +158,10 @@ This project contains 8 main components:
 ### 6. Blockstream Balance Loop (scripts/blockstream_info/src/main.rs)
 
 - CLI tool to check Bitcoin address balances
-- Reads addresses from a file
+- Reads addresses from a file or stdin (use `-` as filename or pipe input)
 - Queries Blockstream API for balance info
 - Stops when it finds a non-zero balance
+- Supports `--help` flag for usage information
 
 ### 7. Blockstream Transaction Lookup (scripts/blockstream_tx/src/main.rs)
 
@@ -144,7 +170,25 @@ This project contains 8 main components:
 - Displays transaction details: inputs, outputs, fees, confirmation status
 - Outputs both human-readable format and JSON
 
-### 8. API Server (api/src/main.rs)
+### 8. Fetch UTXOs (scripts/fetch_utxos/src/main.rs)
+
+- CLI tool to fetch Unspent Transaction Outputs for a Bitcoin address
+- Queries Blockstream API for UTXO information
+- Outputs JSON formatted UTXO data including txid, vout, value, and confirmation status
+
+### 9. Broadcast Transaction (scripts/broadcast_tx/src/main.rs)
+
+- CLI tool to broadcast signed Bitcoin transactions to the network
+- Submits transaction hex to Blockstream API
+- Returns transaction ID (txid) upon successful broadcast
+
+### 10. Estimate Fee (scripts/estimate_fee/src/main.rs)
+
+- CLI tool to estimate Bitcoin transaction fees
+- Queries fee estimation APIs for current network conditions
+- Provides fee estimates for different confirmation targets
+
+### 11. API Server (api/src/main.rs)
 
 - HTTP server using Actix-web
 - Endpoint: POST /create_tx to create unsigned Bitcoin transactions
@@ -154,7 +198,7 @@ This project contains 8 main components:
 
 ### Supporting Files
 
-- Build script (build-release.sh): Builds all tools in release mode
+- Build script (`scripts/build/build.sh`): Builds all tools in release or debug mode
 - Dockerfile: Containerizes the API server
 - fly.toml: Fly.io deployment configuration
 - Cargo.toml files: Dependency specifications for each crate

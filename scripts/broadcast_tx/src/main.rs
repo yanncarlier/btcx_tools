@@ -1,12 +1,6 @@
 use reqwest::blocking::Client;
-use serde::Deserialize;
 use std::env;
 use std::process;
-
-#[derive(Deserialize, Debug)]
-struct BroadcastResponse {
-    txid: String,
-}
 
 fn main() {
     let args: Vec<String> = env::args().collect();

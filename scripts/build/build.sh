@@ -9,6 +9,24 @@ BUILD_TYPE="debug"
 TARGET=""
 CLEAN=false
 
+# Print usage information
+print_usage() {
+    echo "Usage: $0 [OPTIONS]"
+    echo
+    echo "Build all btcx_tools workspace members and copy binaries to dist/ directory."
+    echo
+    echo "Options:"
+    echo "  --release           Build in release mode (default: debug)"
+    echo "  --target TARGET     Build for specific target triple"
+    echo "  --clean             Clean build directories before building"
+    echo "  -h, --help          Show this help message"
+    echo
+    echo "Examples:"
+    echo "  $0                  # Build debug binaries"
+    echo "  $0 --release        # Build release binaries"
+    echo "  $0 --clean --release # Clean and build release"
+}
+
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -24,8 +42,12 @@ while [[ $# -gt 0 ]]; do
             CLEAN=true
             shift
             ;;
+        -h|--help)
+            print_usage
+            exit 0
+            ;;
         *)
-            error "Unknown option: $1"
+            error "Unknown option: $1\nUse --help for usage information."
             ;;
     esac
 done
@@ -48,6 +70,7 @@ CRATES=(
     "scripts/brain_wallet:brain_wallet"
     "scripts/broadcast_tx:broadcast_tx"
     "scripts/create_tx:create_tx"
+    "scripts/estimate_fee:estimate_fee"
     "scripts/fetch_utxos:fetch_utxos"
     "scripts/generate_addresses:generate_addresses"
     "scripts/generate_mnemonic:generate_mnemonic"

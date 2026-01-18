@@ -1,7 +1,7 @@
 use reqwest::blocking::get;
 use serde::{Deserialize, Serialize};
 use std::env;
-use std::io::{self, Write};
+use std::io;
 use std::process;
 
 #[derive(Deserialize, Serialize, Debug)]

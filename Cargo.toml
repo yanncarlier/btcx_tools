@@ -13,6 +13,7 @@ members = [
     "scripts/sign_tx",
     "src/lib",
 ]
+resolver = "1"
 
 [profile.release]
 lto = true

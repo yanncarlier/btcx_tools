@@ -3,7 +3,6 @@ use serde::Deserialize;
 use std::env;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader};
-use std::process;
 
 #[derive(Deserialize)]
 struct AddressInfo {
@@ -20,18 +19,28 @@ fn main() -> io::Result<()> {
     // Collect command-line arguments
     let args: Vec<String> = env::args().collect();
 
-    // Check if a file name argument is provided
-    if args.len() < 2 {
-        eprintln!("Usage: {} <file_name>", args[0]);
-        process::exit(1);
+    // Handle help flag
+    if args.len() > 1 && (args[1] == "--help" || args[1] == "-h") {
+        println!("Usage: {} [file_name]", args[0]);
+        println!();
+        println!("Reads Bitcoin addresses from file_name (one per line) and checks their balance.");
+        println!("If no file_name is provided or file_name is '-', reads from stdin.");
+        println!("Exits when a non-zero balance is found.");
+        return Ok(());
     }
 
-    // Open the file specified by the argument
-    let file = File::open(&args[1])?;
-    let reader = BufReader::new(file);
+    // Determine input source: if no argument or argument is "-", read from stdin
+    let input_source: Box<dyn BufRead> = if args.len() < 2 || args[1] == "-" {
+        // Read from stdin
+        Box::new(BufReader::new(io::stdin()))
+    } else {
+        // Open the file specified by the argument
+        let file = File::open(&args[1])?;
+        Box::new(BufReader::new(file))
+    };
 
-    // Loop over each line in the file
-    for line in reader.lines() {
+    // Loop over each line in the input source
+    for line in input_source.lines() {
         let address = line?;
         let address = address.trim(); // Remove whitespace
 
