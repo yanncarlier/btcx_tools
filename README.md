@@ -83,22 +83,26 @@ scripts/build/build.sh --clean --release
 ### Basic Usage
 
 ```bash
-# Generate 12-word mnemonic
-./dist/generate_mnemonic wordlists/english.txt 12
-
-# Generate addresses from mnemonic (no passphrase)
-./dist/generate_addresses "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about" "m/44'/0'/0'/0" ""
-
 # Brain wallet from passphrase
 ./dist/brain_wallet "correct horse battery staple"
-
+```
+```bash
+# Generate 12-word mnemonic
+./dist/generate_mnemonic wordlists/english.txt 12
+```
+```bash
+# Generate addresses from mnemonic (no passphrase)
+./dist/generate_addresses "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about" "m/44'/0'/0'/0" ""
+```
+```bash
 # Check balances of many addresses
 ./dist/blockstream_balance_loop addresses.txt  
 # or
 ./dist/blockstream_balance_loop <<< 1LqBGSKuX5yYUonjxT5qGfpUsXKYYWeabA
 # or
 echo 1LqBGSKuX5yYUonjxT5qGfpUsXKYYWeabA | ./dist/blockstream_balance_loop
-
+```
+```bash
 # To get a transaction ID (txid) (address used to send BTC to Hal Finney)
 ./dist/fetch_utxos 12cbQLTFMXRnSzktFkuoG3eHoMeFtpTu3S
 # Example output includes txid field for each UTXO:
@@ -116,17 +120,40 @@ echo 1LqBGSKuX5yYUonjxT5qGfpUsXKYYWeabA | ./dist/blockstream_balance_loop
     "address": null,
     "script_pubkey": null
   }, ...
-
+```
+```bash
 # Look up transaction details by txid
 ./dist/blockstream_tx 3832f861eb0fd967fd079da2ee90e415d295dbc81bfb895b73a220aa689c89eb
-
+```
+```bash
 # Create unsigned transaction (JSON from command-line)
-./dist/create_tx '{"inputs":[{"txid":"abc123...","vout":0}],"outputs":[{"address":"1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa","amount":1000}]}'
+./dist/create_tx '{"inputs":[{"txid":"3832f861eb0fd967fd079da2ee90e415d295dbc81bfb895b73a220aa689c89eb","vout":0}],"outputs":[{"address":"1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa","amount":1000}]}'
 
+
+./dist/create_tx  '{
+  "inputs": [
+    {
+      "txid": "3832f861eb0fd967fd079da2ee90e415d295dbc81bfb895b73a220aa689c89eb",
+      "vout": 0
+    }
+  ],
+  "outputs": [
+    {
+      "address": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa",
+      "amount": 100
+    }
+  ]
+}'
+# unsigned transaction output example
+0100000001eb899c68aa20a2735b89fb1bc8db95d215e490eea29d07fd67d90feb61f832380000000000ffffffff0164000000000000001976a91462e907b15cbf27d5425399ebf6f0fb50ebb88f1888ac00000000
+
+```
+```bash
 # Sign transaction (JSON from command-line)
 ./dist/sign_tx '{"unsigned_tx_hex":"...","inputs":[{"private_key_wif":"5K...","address":"1A1z..."}]}'
-
-# Start the transaction builder API
+```
+```bash
+# Start the transaction builder API (WIP don't use)
 ./dist/bitcoin_tx_api
 ```
 
@@ -134,14 +161,10 @@ echo 1LqBGSKuX5yYUonjxT5qGfpUsXKYYWeabA | ./dist/blockstream_balance_loop
 
 ## Advanced Usage Examples
 
-
-
 ```
 ./dist/generate_mnemonic wordlists/english.txt 12 \
 |xargs -I {} ./dist/generate_addresses {} "m/44'/0'/0'/0" ""
 ```
-
-
 
 **Generate mnemonic -> save it -> generate addresses -> save addresses -> check balances**
 
