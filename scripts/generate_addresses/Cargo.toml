@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-bip39 = "2.0"
+bip39 = "2.2"
 bip32 = "0.5"
 bitcoin = "0.31"
 hex = "0.4"
