@@ -110,11 +110,6 @@ impl From<bitcoin::blockdata::script::Error> for Error {
     }
 }
 
-impl From<bip32::ExtendedPrivKey> for Error {
-    fn from(_: bip32::ExtendedPrivKey) -> Self {
-        Error::Custom("Invalid extended private key".to_string())
-    }
-}
 
 impl From<bitcoin::secp256k1::Error> for Error {
     fn from(e: bitcoin::secp256k1::Error) -> Self {

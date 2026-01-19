@@ -50,7 +50,7 @@ impl From<Network> for BtcNetwork {
             Network::Testnet => BtcNetwork::Testnet,
             Network::Signet => BtcNetwork::Signet,
             Network::Regtest => BtcNetwork::Regtest,
-            _ => BtcNetwork::Bitcoin, // Default to Bitcoin for any other variants
+            _ => BtcNetwork::Bitcoin,
         }
     }
 }

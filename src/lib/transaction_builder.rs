@@ -1,10 +1,9 @@
 //! Transaction builder for creating and signing Bitcoin transactions
 
-use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
 
 use bitcoin::{
-    absolute, hashes::Hash, secp256k1, Address, Amount, EcdsaSighashType, OutPoint, Script,
+    absolute, secp256k1, Address, Amount, EcdsaSighashType, OutPoint, Script,
     Sequence, Transaction, TxIn, TxOut, Txid, Witness,
 };
 use rand::seq::SliceRandom;
@@ -12,10 +11,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::{Error, Result};
 use crate::types::{
-    BtcNetwork, CoinSelectionStrategy, FeeEstimate, KeyPair, OutputTarget, SigningInput,
+    BtcNetwork, CoinSelectionStrategy, OutputTarget, SigningInput,
     SignedTransaction, Utxo,
 };
-use crate::utils;
 
 /// Transaction builder configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -146,8 +144,8 @@ impl TransactionBuilder {
 
         // Calculate fee
         let tx = self.create_unsigned_tx(&selected_utxos, None)?;
-        let tx_size = tx.get_size();
-        let tx_vsize = tx.get_vsize();
+        let weight = tx.weight().to_wu() as usize;
+        let tx_vsize = ((weight + 3) / 4) as u64;
         let fee = (tx_vsize as f32 * self.config.fee_rate).ceil() as u64;
         
         // Check if we have enough funds
