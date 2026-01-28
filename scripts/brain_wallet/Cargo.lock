@@ -84,14 +84,9 @@ checksum = "c08d65885ee38876c4f86fa503fb49d7b507c2b62552df7c70b2fce627e06381"
 
 [[package]]
 name = "ripemd160"
-version = "0.9.1"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2eca4ecc81b7f313189bf73ce724400a07da2a6dac19588b03c8bd76a2dcc251"
-dependencies = [
- "block-buffer",
- "digest",
- "opaque-debug",
-]
+checksum = "f923401a7e6614f2838037bd9bac86c003d1629446d2b5816d3159472071be4f"
 
 [[package]]
 name = "secp256k1"
