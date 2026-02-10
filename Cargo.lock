@@ -1001,7 +1001,7 @@ name = "generate_mnemonic"
 version = "0.1.0"
 dependencies = [
  "bitvec",
- "rand 0.8.5",
+ "rand 0.9.2",
  "sha2 0.10.9",
 ]
 
