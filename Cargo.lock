@@ -380,12 +380,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2dee39a0ee5b4095224a0cfc6bf4cc1baf0f9624b96b367e53b66d974e51d953"
 
 [[package]]
-name = "bitcoin-private"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "73290177011694f38ec25e165d0387ab7ea749a4b81cd4c80dae5988229f7a57"
-
-[[package]]
 name = "bitcoin-units"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -400,15 +394,6 @@ name = "bitcoin_hashes"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "90064b8dee6815a6470d60bad07bbbaee885c0e12d04177138fa3291a01b7bc4"
-
-[[package]]
-name = "bitcoin_hashes"
-version = "0.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d7066118b13d4b20b23645932dfb3a81ce7e29f95726c2036fa33cd7b092501"
-dependencies = [
- "bitcoin-private",
-]
 
 [[package]]
 name = "bitcoin_hashes"
@@ -556,7 +541,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "bitcoin 0.32.8",
- "bitcoin_hashes 0.12.0",
+ "bitcoin_hashes 0.14.1",
  "env_logger",
  "hex",
  "log",
@@ -2131,7 +2116,7 @@ name = "sign_tx"
 version = "0.1.0"
 dependencies = [
  "bitcoin 0.29.2",
- "bitcoin_hashes 0.11.0",
+ "bitcoin_hashes 0.14.1",
  "hex",
  "secp256k1 0.24.3",
  "serde",
