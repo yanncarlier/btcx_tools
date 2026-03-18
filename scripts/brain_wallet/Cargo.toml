@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+sha2 = "0.9"      # Downgrade to match digest 0.10
+ripemd160 = "0.9" # Already uses digest 0.10
 sha2 = "0.10"      # Downgrade to match digest 0.10
 ripemd160 = "0.9" # Already uses digest 0.9
 base58 = "0.2"
