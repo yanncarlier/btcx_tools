@@ -8,4 +8,4 @@ bip39 = "2.2"
 bip32 = "0.5"
 bitcoin = "0.32"
 hex = "0.4"
-k256 = { version = "0.13", features = ["ecdsa"] }
+k256 = { version = "0.14", features = ["ecdsa"] }
